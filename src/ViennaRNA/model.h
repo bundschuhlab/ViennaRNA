@@ -30,6 +30,36 @@ typedef struct vrna_md_s vrna_md_t;
 #define VRNA_MODEL_DEFAULT_TEMPERATURE    37.0
 
 /**
+ *  @brief Default force in FJC model implementation in pN
+ *  @see  #vrna_md_t.force, vrna_md_defaults_reset(), vrna_md_set_default()
+ */
+#define VRNA_MODEL_DEFAULT_FORCE		   0.0
+
+/**
+ *  @brief Default exterior base size in FJC model implementation in 0.1 Angstroms
+ *  @see  #vrna_md_t.ext_base_size, vrna_md_defaults_reset(), vrna_md_set_default()
+ */
+#define VRNA_MODEL_DEFAULT_EXT_BASE_SIZE   70
+
+/**
+ *  @brief Default kuhn length in FJC model implementation in 0.1 Angstroms
+ *  @see  #vrna_md_t.kuhn_l, vrna_md_defaults_reset(), vrna_md_set_default()
+ */
+#define VRNA_MODEL_DEFAULT_KUHN_L   192
+
+/**
+ *  @brief Default protein length in FJC model implementation in 0.1 Angstroms
+ *  @see  #vrna_md_t.protein_l, vrna_md_defaults_reset(), vrna_md_set_default()
+ */
+#define VRNA_MODEL_DEFAULT_PROTEIN_L   0.0
+
+/**
+ *  @brief Default base-stem conversion in FJC model implementation
+ *  @see  #vrna_md_t.base_to_stem_conv, vrna_md_defaults_reset(), vrna_md_set_default()
+ */
+#define VRNA_MODEL_DEFAULT_BASE_TO_STEM_CONV  3
+
+/**
  *  @brief  Default scaling factor for partition function computations
  *  @see  #vrna_exp_param_t.pf_scale, vrna_md_defaults_reset(), vrna_md_set_default()
  */
@@ -179,6 +209,11 @@ typedef struct vrna_md_s vrna_md_t;
  */
 struct vrna_md_s {
   double  temperature;                      /**<  @brief  The temperature used to scale the thermodynamic parameters */
+  double  force;                            /**<  @brief  The force used to scale the thermodynamic parameters */
+  int     ext_base_size;                    /**<  @brief  Size of exterior unpaired base in 0.1 Angstrom */
+  int     kuhn_l;                    /**<  @brief  Persistence length of ssRNA in 0.1 Angstrom */
+  double  protein_l;                        /**<  @brief  Protein length of added protein in 0.1 Angstrom */
+  int     base_to_stem_conv;                /**<  @brief  Equivalent number of basEs for exterior hairpin in force model */
   double  betaScale;                        /**<  @brief  A scaling factor for the thermodynamic temperature of the Boltzmann factors */
   int     pf_smooth;                        /**<  @brief  A flat specifying whether energies in Boltzmann factors need to be smoothed */
   int     dangles;                          /**<  @brief  Specifies the dangle model used in any energy evaluation (0,1,2 or 3)
@@ -331,6 +366,91 @@ vrna_md_defaults_temperature(double T);
  */
 double
 vrna_md_defaults_temperature_get(void);
+
+
+/**
+ *  @brief  Set default force for energy evaluation of loops
+ *  @see vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_FORCE
+ *  @param F  Force in pN nm
+ */
+void
+vrna_md_defaults_force(double F);
+
+
+/**
+ *  @brief  Get default force for energy evaluation of loops
+ *  @see vrna_md_defaults_force(), vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_FORCE
+ *  @return  The global default settings for force in pN nm
+ */
+double
+vrna_md_defaults_force_get(void);
+
+/**
+ *  @brief  Set default exterior base size for energy evaluation of loops
+ *  @see vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_EXT_BASE_SIZE
+ *  @param ebs Exterior Base Size in 0.1 Angstrom
+ */
+void
+vrna_md_defaults_ext_base_size(int ebs);
+
+
+/**
+ *  @brief  Get default exterior base size for energy evaluation of loops
+ *  @see vrna_md_defaults_ext_base_size(), vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_EXT_BASE_SIZE
+ *  @return  The global default settings for exterior base size in 0.1 Angstrom
+ */
+int
+vrna_md_defaults_ext_base_size_get(void);
+
+/**
+ *  @brief  Set default kuhn length for energy evaluation of loops
+ *  @see vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_KUHN_L
+ *  @param pl Persistence length in 0.1 Angstrom
+ */
+void
+vrna_md_defaults_kuhn_l(int pl);
+
+
+/**
+ *  @brief  Get default kuhn length for energy evaluation of loops
+ *  @see vrna_md_defaults_kuhn_l(), vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_KUHN_L
+ *  @return  The global default settings for kuhn length in 0.1 Angstrom
+ */
+int
+vrna_md_defaults_kuhn_l_get(void);
+
+/**
+ *  @brief  Set default protein length for energy evaluation of loops
+ *  @see vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_PROTEIN_L
+ *  @param pl Protein length in 0.1 Angstrom
+ */
+void
+vrna_md_defaults_protein_l(double pl);
+
+
+/**
+ *  @brief  Get default protein length for energy evaluation of loops
+ *  @see vrna_md_defaults_protein_l(), vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_PROTEIN_L
+ *  @return  The global default settings for protein length in 0.1 Angstrom
+ */
+double
+vrna_md_defaults_protein_l_get(void);
+
+/**
+ *  @brief  Set default base-stem conversion for energy evaluation of loops
+ *  @see vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_BASE_TO_STEM_CONV
+ *  @param bts base-to-stem conversion
+ */
+void
+vrna_md_defaults_base_to_stem_conv(int bts);
+
+/**
+ *  @brief  Get default base-stem comversion for energy evaluation of loops
+ *  @see vrna_md_defaults_base_to_stem_conv(), vrna_md_defaults_reset(), vrna_md_set_default(), #vrna_md_t, #VRNA_MODEL_DEFAULT_BASE_TO_STEM_CONV
+ *  @return  The global default settings for base-stem conversion
+ */
+int
+vrna_md_defaults_base_to_stem_conv_get(void);
 
 
 /**
@@ -759,6 +879,61 @@ vrna_md_defaults_sfact_get(void);
  *  @see vrna_md_defaults_temperature(), vrna_md_defaults_temperature_get(), vrna_md_defaults_reset()
  */
 extern double temperature;
+
+/**
+ *  @brief Rescale energy parameters to a force in pN nm.
+ *
+ *  Default is 0 pN nm. You have to call the update_..._params() functions after
+ *  changing this parameter.
+ *  @deprecated   Use vrna_md_defaults_force(), and vrna_md_defaults_force_get()
+ *                to change, and read the global default force settings
+ *  @see vrna_md_defaults_force(), vrna_md_defaults_force_get(), vrna_md_defaults_reset()
+ */
+extern double force;
+
+/**
+ *  @brief Size of exterior base.
+ *
+ *  Default is 7 Angstrom. You have to call the update_..._params() functions after
+ *  changing this parameter.
+ *  @deprecated   Use vrna_md_defaults_ext_base_size(), and vrna_md_defaults_ext_base_size_get()
+ *                to change, and read the global default settings
+ *  @see vrna_md_defaults_ext_base_size(), vrna_md_defaults_ext_base_size_get(), vrna_md_defaults_reset()
+ */
+extern int ext_base_size;
+
+/**
+ *  @brief Persistence length.
+ *
+ *  Default is 19.2 Angstrom. You have to call the update_..._params() functions after
+ *  changing this parameter.
+ *  @deprecated   Use vrna_md_defaults_kuhn_l(), and vrna_md_defaults_kuhn_l_get()
+ *                to change, and read the global default settings
+ *  @see vrna_md_defaults_kuhn_l(), vrna_md_defaults_kuhn_l_get(), vrna_md_defaults_reset()
+ */
+extern int kuhn_l;
+
+/**
+ *  @brief Protein length.
+ *
+ *  Default is 0.0 Angstrom. You have to call the update_..._params() functions after
+ *  changing this parameter.
+ *  @deprecated   Use vrna_md_defaults_protein_l(), and vrna_md_defaults_kuhn_l_get()
+ *                to change, and read the global default settings
+ *  @see vrna_md_defaults_protein_l(), vrna_md_defaults_protein_l_get(), vrna_md_defaults_reset()
+ */
+extern double protein_l;
+
+/**
+ *  @@brief Base-stem conversion in force model.
+ *
+ *  Default is 3 bases. You have to call the update_..._params() functions after
+ *  changing this parameter.
+ *  @deprecated   Use vrna_md_defaults_base_to_stem_conv(), and vrna_md_defaults_base_to_stem_conv_get()
+ *                to change, and read the global default settings
+ *  @see vrna_md_defaults_base_to_stem_conv(), vrna_md_defaults_base_to_stem_conv_get(), vrna_md_defaults_reset()
+ */
+extern int base_to_stem_conv;
 
 /**
  *  @brief A scaling factor used by pf_fold() to avoid overflows.

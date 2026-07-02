@@ -46,26 +46,31 @@
  *  Package v3
  */
 
-double          temperature     = VRNA_MODEL_DEFAULT_TEMPERATURE;
-double          pf_scale        = VRNA_MODEL_DEFAULT_PF_SCALE;
-int             dangles         = VRNA_MODEL_DEFAULT_DANGLES;
-int             tetra_loop      = VRNA_MODEL_DEFAULT_SPECIAL_HP;
-int             noLonelyPairs   = VRNA_MODEL_DEFAULT_NO_LP;
-int             noGU            = VRNA_MODEL_DEFAULT_NO_GU;
-int             no_closingGU    = VRNA_MODEL_DEFAULT_NO_GU_CLOSURE;
-int             circ            = VRNA_MODEL_DEFAULT_CIRC;
-int             gquad           = VRNA_MODEL_DEFAULT_GQUAD;
-int             uniq_ML         = VRNA_MODEL_DEFAULT_UNIQ_ML;
-int             energy_set      = VRNA_MODEL_DEFAULT_ENERGY_SET;
-int             do_backtrack    = VRNA_MODEL_DEFAULT_COMPUTE_BPP;
-char            backtrack_type  = VRNA_MODEL_DEFAULT_BACKTRACK_TYPE;
-char            *nonstandards   = NULL;
-int             max_bp_span     = VRNA_MODEL_DEFAULT_MAX_BP_SPAN;
-int             oldAliEn        = VRNA_MODEL_DEFAULT_ALI_OLD_EN;
-int             ribo            = VRNA_MODEL_DEFAULT_ALI_RIBO;
-double          cv_fact         = VRNA_MODEL_DEFAULT_ALI_CV_FACT;
-double          nc_fact         = VRNA_MODEL_DEFAULT_ALI_NC_FACT;
-int             logML           = VRNA_MODEL_DEFAULT_LOG_ML;
+double          temperature      = VRNA_MODEL_DEFAULT_TEMPERATURE;
+double          force            = VRNA_MODEL_DEFAULT_FORCE;
+int             ext_base_size    = VRNA_MODEL_DEFAULT_EXT_BASE_SIZE;
+int             kuhn_l    = VRNA_MODEL_DEFAULT_KUHN_L;
+double          protein_l        = VRNA_MODEL_DEFAULT_PROTEIN_L;           
+int             base_to_stem_conv  = VRNA_MODEL_DEFAULT_BASE_TO_STEM_CONV;
+double          pf_scale         = VRNA_MODEL_DEFAULT_PF_SCALE;
+int             dangles          = VRNA_MODEL_DEFAULT_DANGLES;
+int             tetra_loop       = VRNA_MODEL_DEFAULT_SPECIAL_HP;
+int             noLonelyPairs    = VRNA_MODEL_DEFAULT_NO_LP;
+int             noGU             = VRNA_MODEL_DEFAULT_NO_GU;
+int             no_closingGU     = VRNA_MODEL_DEFAULT_NO_GU_CLOSURE;
+int             circ             = VRNA_MODEL_DEFAULT_CIRC;
+int             gquad            = VRNA_MODEL_DEFAULT_GQUAD;
+int             uniq_ML          = VRNA_MODEL_DEFAULT_UNIQ_ML;
+int             energy_set       = VRNA_MODEL_DEFAULT_ENERGY_SET;
+int             do_backtrack     = VRNA_MODEL_DEFAULT_COMPUTE_BPP;
+char            backtrack_type   = VRNA_MODEL_DEFAULT_BACKTRACK_TYPE;
+char            *nonstandards    = NULL;
+int             max_bp_span      = VRNA_MODEL_DEFAULT_MAX_BP_SPAN;
+int             oldAliEn         = VRNA_MODEL_DEFAULT_ALI_OLD_EN;
+int             ribo             = VRNA_MODEL_DEFAULT_ALI_RIBO;
+double          cv_fact          = VRNA_MODEL_DEFAULT_ALI_CV_FACT;
+double          nc_fact          = VRNA_MODEL_DEFAULT_ALI_NC_FACT;
+int             logML            = VRNA_MODEL_DEFAULT_LOG_ML;
 
 /* below are some more deprecated global symbols we need to get rid off */
 
@@ -122,6 +127,11 @@ dm_default[7][7] = DM_DEFAULT;
 
 PRIVATE vrna_md_t defaults = {
   VRNA_MODEL_DEFAULT_TEMPERATURE,
+  VRNA_MODEL_DEFAULT_FORCE,
+  VRNA_MODEL_DEFAULT_EXT_BASE_SIZE,
+  VRNA_MODEL_DEFAULT_KUHN_L,
+  VRNA_MODEL_DEFAULT_PROTEIN_L,
+  VRNA_MODEL_DEFAULT_BASE_TO_STEM_CONV,
   1.,
   VRNA_MODEL_DEFAULT_PF_SMOOTH,
   VRNA_MODEL_DEFAULT_DANGLES,
@@ -249,6 +259,9 @@ vrna_md_option_string(vrna_md_t *md)
 
     if (md->temperature != VRNA_MODEL_DEFAULT_TEMPERATURE)
       sprintf(options + strlen(options), "-T %f ", md->temperature);
+  
+	  if (md->force != VRNA_MODEL_DEFAULT_FORCE)
+      sprintf(options + strlen(options), "-F %f ", md->force);
   }
 
   return options;
@@ -349,6 +362,11 @@ vrna_md_defaults_reset(vrna_md_t *md_p)
   defaults.ribo             = VRNA_MODEL_DEFAULT_ALI_RIBO;
   defaults.cv_fact          = VRNA_MODEL_DEFAULT_ALI_CV_FACT;
   defaults.nc_fact          = VRNA_MODEL_DEFAULT_ALI_NC_FACT;
+  defaults.force            = VRNA_MODEL_DEFAULT_FORCE;
+  defaults.ext_base_size    = VRNA_MODEL_DEFAULT_EXT_BASE_SIZE;
+  defaults.kuhn_l    = VRNA_MODEL_DEFAULT_KUHN_L;
+  defaults.protein_l        = VRNA_MODEL_DEFAULT_PROTEIN_L;
+  defaults.base_to_stem_conv  = VRNA_MODEL_DEFAULT_BASE_TO_STEM_CONV;
   defaults.temperature      = VRNA_MODEL_DEFAULT_TEMPERATURE;
   defaults.betaScale        = VRNA_MODEL_DEFAULT_BETA_SCALE;
   defaults.pf_smooth        = VRNA_MODEL_DEFAULT_PF_SMOOTH;
@@ -384,6 +402,11 @@ vrna_md_defaults_reset(vrna_md_t *md_p)
     vrna_md_defaults_cv_fact(md_p->cv_fact);
     vrna_md_defaults_nc_fact(md_p->nc_fact);
     vrna_md_defaults_temperature(md_p->temperature);
+	  vrna_md_defaults_force(md_p->force);
+	  vrna_md_defaults_ext_base_size(md_p->ext_base_size);
+	  vrna_md_defaults_kuhn_l(md_p->kuhn_l);
+	  vrna_md_defaults_protein_l(md_p->protein_l);
+	  vrna_md_defaults_base_to_stem_conv(md_p->base_to_stem_conv);
     vrna_md_defaults_betaScale(md_p->betaScale);
     vrna_md_defaults_pf_smooth(md_p->pf_smooth);
     vrna_md_defaults_sfact(md_p->sfact);
@@ -395,6 +418,11 @@ vrna_md_defaults_reset(vrna_md_t *md_p)
 
 #ifndef VRNA_DISABLE_BACKWARD_COMPATIBILITY
   temperature     = defaults.temperature;
+  force           = defaults.force;
+  ext_base_size   = defaults.ext_base_size;
+  kuhn_l   = defaults.kuhn_l;
+  protein_l       = defaults.protein_l;
+  base_to_stem_conv = defaults.base_to_stem_conv;
   pf_scale        = VRNA_MODEL_DEFAULT_PF_SCALE;
   dangles         = defaults.dangles;
   tetra_loop      = defaults.special_hp;
@@ -441,13 +469,79 @@ vrna_md_defaults_temperature_get(void)
   return defaults.temperature;
 }
 
+PUBLIC void
+vrna_md_defaults_force(double F)
+{
+  if (F >= 0) {
+    defaults.force = F;
+#ifndef VRNA_DISABLE_BACKWARD_COMPATIBILITY
+    force = F;
+#endif
+  } else {
+    vrna_message_warning(
+      "vrna_md_defaults_force@model.c: Force out of range, F must be non-negative. Not changing anything!");
+  }
+}
+
+PUBLIC double
+vrna_md_defaults_force_get(void)
+{
+  return defaults.force;
+}
+
+PUBLIC void
+vrna_md_defaults_ext_base_size(int ebs)
+{
+  defaults.ext_base_size = ebs;
+}
+
+PUBLIC int
+vrna_md_defaults_ext_base_size_get(void)
+{
+  return defaults.ext_base_size;
+}
+
+PUBLIC void
+vrna_md_defaults_kuhn_l(int pl)
+{
+  defaults.kuhn_l = pl;
+}
+
+PUBLIC int
+vrna_md_defaults_kuhn_l_get(void)
+{
+  return defaults.kuhn_l;
+}
+
+PUBLIC void
+vrna_md_defaults_protein_l(double pl)
+{
+  defaults.protein_l = pl;
+}
+
+PUBLIC double
+vrna_md_defaults_protein_l_get(void)
+{
+  return defaults.protein_l;
+}
+
+PUBLIC void
+vrna_md_defaults_base_to_stem_conv(int bts)
+{
+  defaults.base_to_stem_conv = bts;
+}
+
+PUBLIC int
+vrna_md_defaults_base_to_stem_conv_get(void)
+{
+  return defaults.base_to_stem_conv;
+}
 
 PUBLIC void
 vrna_md_defaults_betaScale(double b)
 {
   defaults.betaScale = b;
 }
-
 
 PUBLIC double
 vrna_md_defaults_betaScale_get(void)
@@ -1014,6 +1108,11 @@ set_model_details(vrna_md_t *md)
     md->cv_fact         = cv_fact;
     md->nc_fact         = nc_fact;
     md->temperature     = temperature;
+	  md->force           = force;
+	  md->ext_base_size   = ext_base_size;
+	  md->kuhn_l   = kuhn_l;
+	  md->protein_l       = protein_l;
+	  md->base_to_stem_conv = base_to_stem_conv;
     md->betaScale       = VRNA_MODEL_DEFAULT_BETA_SCALE;
     md->pf_smooth       = VRNA_MODEL_DEFAULT_PF_SMOOTH;
     md->sfact           = 1.07;

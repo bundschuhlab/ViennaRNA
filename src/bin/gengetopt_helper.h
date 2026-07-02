@@ -1,10 +1,17 @@
 /* make this interface backward compatible with RNAlib < 2.2.0 */
+ 
 #ifndef VRNA_DISABLE_BACKWARD_COMPATIBILITY
 
 #define ggo_get_temperature(ggostruct, dest) ({ \
     if (ggostruct.temp_given) \
       dest = ggostruct.temp_arg; \
     temperature = (double)dest; \
+  })
+  
+#define ggo_get_force(ggostruct, dest) ({ \
+    if (ggostruct.force_given) \
+      dest = ggostruct.force_arg; \
+    force = (double)dest; \
   })
 
 #define ggo_get_dangles(ggostruct, dest) ({ \
@@ -61,6 +68,11 @@
 #define ggo_get_temperature(ggostruct, dest) ({ \
     if (ggostruct.temp_given) \
       dest = ggostruct.temp_arg; \
+  })
+  
+#define ggo_get_force(ggostruct, dest) ({ \
+    if (ggostruct.force_given) \
+      dest = ggostruct.force_arg; \
   })
 
 #define ggo_get_dangles(ggostruct, dest) ({ \

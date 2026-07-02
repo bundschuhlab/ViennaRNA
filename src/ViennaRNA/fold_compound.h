@@ -182,7 +182,12 @@ struct vrna_fc_s {
 
   vrna_param_t      *params;        /**<  @brief  The precomputed free energy contributions for each type of loop */
   vrna_exp_param_t  *exp_params;    /**<  @brief  The precomputed free energy contributions as Boltzmann factors  */
-
+  
+  /* parameters to store pf factors due to external force */
+  FLT_OR_DBL		*force_base_boltz_multi; /** @brief The precomputed free energy contributions as Boltzmann factors for exterior bases due to external force */
+  FLT_OR_DBL        force_stem_boltz;  /** @brief The precomputed free energy contributions as Boltzmann factors for exterior stems due to external force */
+  FLT_OR_DBL        force_prot_corr_boltz;  /** @brief The precomputed free energy contributions as Boltzmann factors for protein binding to exterior bases due to external force */
+  
   int               *iindx;         /**<  @brief  DP matrix accessor  */
   int               *jindx;         /**<  @brief  DP matrix accessor  */
 

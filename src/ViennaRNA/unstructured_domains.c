@@ -82,6 +82,9 @@ struct ligands_up_data_default {
 
   int         *dG;
   FLT_OR_DBL  *exp_dG;
+  FLT_OR_DBL  *force_base_boltz_multi;
+  FLT_OR_DBL  force_prot_corr_boltz;
+  
   int         *len;
 
   /*
@@ -955,6 +958,8 @@ get_default_data(void)
   data->motif_list_mb     = NULL;
   data->dG                = NULL;
   data->exp_dG            = NULL;
+  data->force_base_boltz_multi = NULL;
+  data->force_prot_corr_boltz  = 1.0;
   data->energies_ext      = NULL;
   data->energies_hp       = NULL;
   data->energies_int      = NULL;
@@ -2221,6 +2226,8 @@ default_exp_prod_rule(vrna_fold_compound_t  *vc,
   domains_up  = vc->domains_up;
   data        = (struct ligands_up_data_default *)d;
   kT          = vc->exp_params->kT;
+  data->force_prot_corr_boltz  = vc->force_prot_corr_boltz;
+  data->force_base_boltz_multi = vc->force_base_boltz_multi;
 
   prepare_default_data(vc, data);
   prepare_exp_matrices(vc, data);
@@ -2264,7 +2271,8 @@ default_exp_prod_rule(vrna_fold_compound_t  *vc,
       if (list_ext) {
         for (k = 0; -1 != (l = list_ext[k]); k++) {
           u = i + data->len[l] - 1;
-          q = data->exp_dG[l];
+		  /* modified partition function to implement FJC where external protein binding site is a single chain */
+          q = data->exp_dG[l] * data->force_prot_corr_boltz / data->force_base_boltz_multi[data->len[l]];
           if (u <= j) {
             q_ext += q;
             if (u < j)
@@ -2492,7 +2500,8 @@ default_exp_energy_ext_motif(int                            i,
     k = 0;
     while (-1 != (m = data->motif_list_ext[i][k])) {
       if ((i + data->len[m] - 1) == j)
-        q += data->exp_dG[m];
+        /* modified partition function to implement FJC where external protein binding site is a single chain */
+		q += data->exp_dG[m] * data->force_prot_corr_boltz;
 
       k++;
     }

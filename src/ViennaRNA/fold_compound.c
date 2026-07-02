@@ -86,6 +86,10 @@ PRIVATE void
 add_params(vrna_fold_compound_t *fc,
            vrna_md_t            *md_p,
            unsigned int         options);
+		   
+		   
+PRIVATE void
+add_force(vrna_fold_compound_t *fc);
 
 
 PRIVATE vrna_fold_compound_t *
@@ -118,6 +122,7 @@ vrna_fold_compound_free(vrna_fold_compound_t *fc)
     free(fc->jindx);
     free(fc->params);
     free(fc->exp_params);
+	free(fc->force_base_boltz_multi);
 
     vrna_hc_free(fc->hc);
     vrna_ud_remove(fc);
@@ -230,7 +235,10 @@ vrna_fold_compound(const char       *sequence,
 
   /* now for the energy parameters */
   add_params(fc, &md, options);
-
+  
+  /* calculate force parameters according to FJC */
+  add_force(fc);
+  
   sanitize_bp_span(fc, options);
 
   if (options & VRNA_OPTION_WINDOW) {
@@ -611,6 +619,77 @@ add_params(vrna_fold_compound_t *fc,
   vrna_params_prepare(fc, options);
 }
 
+/* function to compute FJC corrections to pf and store in fold compound structrue */
+PRIVATE void
+add_force(vrna_fold_compound_t *fc)
+{
+  vrna_md_t           *md;
+  unsigned int        n, kuhn_l, ext_base_size, base_to_stem_conv;
+  FLT_OR_DBL		  temp, pNnm_to_calpmol, force, protein_l, k0, kT, force_base_arg, force_prot_arg, power, arg, pfb;
+	
+  n             = fc->length;
+  md            = &(fc->params->model_details);
+	
+  temp            = md->temperature;
+  kuhn_l   = md->kuhn_l;
+  protein_l       = md->protein_l;
+  force           = md->force;
+  ext_base_size   = md->ext_base_size;
+  base_to_stem_conv = md->base_to_stem_conv;	/* equate stem width to that of a specified number of external bases */
+	
+  /*
+   * ALWAYS provide regular force parameters
+   * remove previous parameters if present and they differ from current model
+   */
+  if (fc->force_base_boltz_multi) {
+    free(fc->force_base_boltz_multi);
+    fc->force_base_boltz_multi = NULL;
+  }
+
+  /* for the force parameters we assume that the force is measured in pN
+      and the distance parameters are given in 0.1A. We have to convert
+      the corresponding energy into cal/mol which is what the factor
+      1.4385688 is for. Positive forces correspond to pulling. */
+	  
+  k0                = 273.15; /* K */
+  pNnm_to_calpmol	= 1.4385688; /* convert from pN nm to cal/mol */
+  kT                = ((temp+K0)*GASCONST); /* cal/mol */
+  power             = ((double) ext_base_size)/((double) kuhn_l); /* convert from chain pf to base pf */
+  
+  /* calculate partition functions for unpaired external bases of strand lengths [0,n], RBP bound strands, and external stems */
+  
+  force_base_arg      = kuhn_l*force*pNnm_to_calpmol;
+  force_prot_arg      = protein_l*force*pNnm_to_calpmol;
+	
+  fc->force_base_boltz_multi  = (FLT_OR_DBL *) space(sizeof(FLT_OR_DBL)*(n+1));
+
+  fc->force_base_boltz_multi[0] = 1.0;
+  
+  for (int i=1; i<=n; i++) {
+	if(force>0){
+		arg = (double) sinh(force_base_arg/kT)*kT/force_base_arg; /*partition function of chain under force in FJC model*/
+		pfb = (fc->force_base_boltz_multi[i-1])* pow(arg, power); /*partition function correction for i external bases */
+		fc->force_base_boltz_multi[i] = pfb;
+	}
+	else{
+		fc->force_base_boltz_multi[i] = 1.0;
+	}
+  }
+	
+  if(force>0){
+	fc->force_stem_boltz = fc->force_base_boltz_multi[base_to_stem_conv];
+	if(protein_l>0){
+		fc->force_prot_corr_boltz = (double) sinh(force_prot_arg/kT)*kT/force_prot_arg;
+	}
+	else{
+		fc->force_prot_corr_boltz = 1.0;
+	}
+  }
+  else{
+	fc->force_stem_boltz = 1.0;
+	fc->force_prot_corr_boltz = 1.0;
+  }
+}
 
 PRIVATE void
 set_fold_compound(vrna_fold_compound_t  *fc,

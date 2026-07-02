@@ -97,6 +97,7 @@ exp_E_ext_fast(vrna_fold_compound_t       *fc,
  # BEGIN OF FUNCTION DEFINITIONS #
  #################################
  */
+
 PUBLIC FLT_OR_DBL
 vrna_exp_E_ext_stem(unsigned int      type,
                     int               n5d,
@@ -325,17 +326,19 @@ reduce_ext_ext_fast(vrna_fold_compound_t        *fc,
   FLT_OR_DBL    q_temp, q_temp2, q, *qq1, **qqu, *scale;
   vrna_ud_t     *domains_up;
   sc_ext_exp_cb *sc_red_ext;
+  FLT_OR_DBL    *force_base_boltz_multi;	/* external base(s) FJC correction */
 
   domains_up  = fc->domains_up;
   qq1         = aux_mx->qq1;
   qqu         = aux_mx->qqu;
   scale       = fc->exp_matrices->scale;
   sc_red_ext  = sc_wrapper->red_ext;
+  force_base_boltz_multi = fc->force_base_boltz_multi;
 
   q = 0.;
 
   if (evaluate(i, j, i, j - 1, VRNA_DECOMP_EXT_EXT, hc_dat_local)) {
-    q_temp = qq1[i] * scale[1];
+    q_temp = qq1[i] * scale[1] * force_base_boltz_multi[1];		/*multiply single additional external base pf by FJC correction */
 
     if (sc_red_ext)
       q_temp *= sc_red_ext(i, j, i, j - 1, sc_wrapper);
@@ -386,6 +389,7 @@ reduce_ext_stem_fast(vrna_fold_compound_t       *fc,
   vrna_exp_param_t  *pf_params;
   vrna_md_t         *md;
   sc_ext_exp_cb     *sc_red_stem;
+  FLT_OR_DBL        force_stem_boltz;	/* external stem FJC correction */
 
   sc_red_stem = sc_wrapper->red_stem;
   n           = fc->length;
@@ -394,6 +398,7 @@ reduce_ext_stem_fast(vrna_fold_compound_t       *fc,
   md          = &(pf_params->model_details);
   circular    = md->circ;
   idx         = fc->iindx;
+  force_stem_boltz = fc->force_stem_boltz;
   qb          = (fc->hc->type == VRNA_HC_WINDOW) ?
                 fc->exp_matrices->qb_local[i][j] :
                 fc->exp_matrices->qb[idx[i] - j];
@@ -432,6 +437,7 @@ reduce_ext_stem_fast(vrna_fold_compound_t       *fc,
     if (sc_red_stem)
       q_temp *= sc_red_stem(i, j, i, j, sc_wrapper);
 
+	q_temp *= force_stem_boltz;		/* multiply single additional external stem pf by FJC correction */
     qbt += q_temp;
   }
 
@@ -452,16 +458,18 @@ reduce_ext_up_fast(vrna_fold_compound_t       *fc,
   FLT_OR_DBL        qbt, q_temp, *scale;
   vrna_ud_t         *domains_up;
   sc_ext_exp_red_up *sc_red_up;
+  FLT_OR_DBL        *force_base_boltz_multi;	/* external base(s) FJC correction */
 
   sc_red_up = sc_wrapper->red_up;
 
   scale       = fc->exp_matrices->scale;
   domains_up  = fc->domains_up;
+  force_base_boltz_multi = fc->force_base_boltz_multi;
   qbt         = 0.;
 
   if (evaluate(i, j, i, j, VRNA_DECOMP_EXT_UP, hc_dat_local)) {
     u       = j - i + 1;
-    q_temp  = scale[u];
+    q_temp  = scale[u]*force_base_boltz_multi[u];	/* multiply u additional external bases by FJC correction */
 
     if (sc_red_up)
       q_temp *= sc_red_up(i, j, sc_wrapper);
